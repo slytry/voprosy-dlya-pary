@@ -1,0 +1,27 @@
+[
+  {
+    "id": "razgovory-vdvoyom",
+    "title": "Разговоры вдвоём",
+    "subtitle": "О важном, что не всегда легко обсудить",
+    "source": {
+      "kind": "generated",
+      "label": "Сгенерировано агентом"
+    },
+    "encrypted": false,
+    "file": "razgovory-vdvoyom.json",
+    "questionCount": 72
+  },
+  {
+    "id": "rasskazhi",
+    "title": "Расскажи",
+    "subtitle": "100 вопросов для пары",
+    "source": {
+      "kind": "purchased",
+      "label": "Купленная игра",
+      "url": "https://www.ozon.ru/product/nastolnaya-igra-kartochki-s-voprosami-rasskazhi-100-voprosov-dlya-pary-1716052873/"
+    },
+    "encrypted": true,
+    "file": "rasskazhi.enc.json",
+    "questionCount": 103
+  }
+]

@@ -1,0 +1,6 @@
+{
+  "name": "voprosy-dlya-pary",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node --test" }
+}

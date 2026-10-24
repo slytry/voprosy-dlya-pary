@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#F1ECEE">
+  <title>Вопросы для пары</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,500;7..72,600&family=Manrope:wght@400;500;600;700&family=Marck+Script&display=swap">
+  <link rel="stylesheet" href="./css/app.css">
+  <script type="module" src="./js/app.js"></script>
+</head>
+<body>
+  <div class="shell">
+    <header class="site-header">
+      <a class="brand" href="#/" aria-label="Вопросы для пары — главная"><span aria-hidden="true">✳</span> вопросы для пары</a>
+      <nav aria-label="Разделы">
+        <a href="#/favorites">Избранное <span id="favorite-count">0</span></a>
+        <a href="#/hidden">Скрытые <span id="hidden-count">0</span></a>
+        <a href="#/answers">Наши ответы</a>
+        <a href="#/settings">Настройки</a>
+      </nav>
+    </header>
+    <main id="app" tabindex="-1" aria-busy="true"><p>Загружаю колоды…</p></main>
+    <footer class="site-footer">Время друг для друга <span aria-hidden="true">♡</span></footer>
+  </div>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <noscript>Для игры нужен JavaScript. Включите его в настройках браузера.</noscript>
+</body>
+</html>
