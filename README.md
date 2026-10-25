@@ -57,8 +57,8 @@ node --test
 1. Создать `private/decks/<id>.json` по формату существующей колоды: `id`, `title`, необязательные `rules`/`tagline`, `themes`, `questions`, `tasks`.
 2. У темы указать `id`, `name`, `color` (hex), `suit` — имя SVG-масти из `js/suits.js`. У вопроса — стабильный `id`, `theme`, `text`, необязательные `card`/`source`. У заданий — `name`, `source:'agent'`, необязательные `color`/`suit`, `items:[{id,text}]`.
 3. Выполнить `node scripts/encrypt-deck.mjs <id>`.
-4. Добавить в `decks/index.json` запись с `source.kind:'purchased'`, `encrypted:true`, `file:'<id>.enc.json'`, `questionCount` и остальными метаданными по образцу.
-5. Добавить проверку новой колоды в `tests/data.test.js`, выполнить `node --test`. Service worker возьмёт новую колоду из реестра при следующей установке; обновить версию `CACHE` в `sw.js`.
+4. Добавить в `decks/index.json` запись с `source.kind:'purchased'`, `encrypted:true`, `file:'<id>.enc.json'`, `questionCount` и остальными метаданными по образцу; в `source` указать `url` магазина, `publisher`, `image:'<id>.jpg'` (реальное фото `decks/<id>.jpg`: коробка/рубашки без читаемого текста вопросов) и обновить `CACHE` в `sw.js`.
+5. Добавить проверку новой колоды в `tests/data.test.js`, выполнить `node --test`. Service worker возьмёт новую колоду из реестра при следующей установке.
 
 `private/` исключена из Git. Не переносить в публичные файлы пароль, открытый JSON, вопросы, правила или расшифровки купленных колод. `private/sources/` — неизменяемые исходники. Скрипт шифрования не создаёт промежуточных открытых файлов вне `private/`.
 

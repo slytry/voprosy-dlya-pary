@@ -18,7 +18,9 @@
     "source": {
       "kind": "purchased",
       "label": "Купленная игра",
-      "url": "https://www.ozon.ru/product/nastolnaya-igra-kartochki-s-voprosami-rasskazhi-100-voprosov-dlya-pary-1716052873/"
+      "publisher": "YouFeel",
+      "url": "https://www.ozon.ru/product/nastolnaya-igra-kartochki-s-voprosami-rasskazhi-100-voprosov-dlya-pary-1716052873/",
+      "image": "rasskazhi.jpg"
     },
     "encrypted": true,
     "file": "rasskazhi.enc.json",

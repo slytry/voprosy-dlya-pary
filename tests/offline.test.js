@@ -31,7 +31,7 @@ test('service worker caches the complete portal under a subpath and serves it of
   let work;
   events.get('install')({ waitUntil: promise => { work = promise; } });
   await work;
-  for (const path of ['index.html', 'js/app.js', 'js/sync.js', 'css/app.css', 'decks/index.json', 'decks/razgovory-vdvoyom.json', 'decks/rasskazhi.enc.json']) {
+  for (const path of ['index.html', 'js/app.js', 'js/sync.js', 'css/app.css', 'decks/index.json', 'decks/razgovory-vdvoyom.json', 'decks/rasskazhi.enc.json', 'decks/rasskazhi.jpg']) {
     assert.ok(files.has(`${base}${path}`), `Not cached: ${path}`);
   }
   events.get('activate')({ waitUntil: promise => { work = promise; } });
@@ -39,12 +39,12 @@ test('service worker caches the complete portal under a subpath and serves it of
   assert.equal(claimed, true);
   assert.deepEqual(deleted, ['vdp-static-v0', 'vdp-static-v1']);
   offline = true;
-  for (const path of ['', 'css/app.css', 'js/app.js', 'decks/index.json', 'decks/rasskazhi.enc.json']) {
+  for (const path of ['', 'css/app.css', 'js/app.js', 'decks/index.json', 'decks/rasskazhi.enc.json', 'decks/rasskazhi.jpg']) {
     let response;
     events.get('fetch')({ request: new Request(`${base}${path}`), respondWith: promise => { response = promise; } });
     assert.ok((await response).ok, `Offline response failed: ${path}`);
   }
-  for (const url of [`${base}private/password.txt`, 'https://api.github.com/gists', 'https://example.test/another-app/js/app.js']) {
+  for (const url of [`${base}private/password.txt`, `${base}private/rasskazhi.jpg`, `${base}js/rasskazhi.jpg`, `${base}css/rasskazhi.jpg`, `${base}decks/nested/rasskazhi.jpg`, `${base}decks/rasskazhi.png`, 'https://api.github.com/gists', 'https://example.test/another-app/js/app.js']) {
     let intercepted = false;
     events.get('fetch')({ request: new Request(url), respondWith: () => { intercepted = true; } });
     assert.equal(intercepted, false);

@@ -115,14 +115,14 @@ function home() {
   app.innerHTML = `<div class="intro"><p class="eyebrow">Без спешки · по очереди · вдвоём</p><h1>Давай поговорим<br>о нас</h1><p class="hand">Один вопрос может стать началом большого разговора.</p></div>
     <div class="deck-grid">${registry.map(meta => {
       const visible = meta.questionCount - activeKeys(profile.state.hidden).filter(key => key.startsWith(`${meta.id}/`) && !key.split('/')[1].startsWith('task-')).length;
-      return `<article class="deck-tile"><a class="deck-game" href="${deckLink(meta.id)}"><span class="badge">${meta.encrypted ? '<span aria-label="Зашифровано">🔒</span>' : ''}${escape(meta.source.label)}${meta.encrypted ? ' · под паролем' : ''}</span>
+      return `<article class="deck-tile"><a class="deck-game" href="${deckLink(meta.id)}">${meta.source.image ? `<img class="tile-photo" src="decks/${escape(meta.source.image)}" alt="Фото игры «${escape(meta.title)}»" loading="lazy">` : ''}<span class="badge">${meta.encrypted ? '<span aria-label="Зашифровано">🔒</span>' : ''}${escape(meta.source.label)}${meta.source.publisher ? ` · ${escape(meta.source.publisher)}` : ''}${meta.encrypted ? ' · под паролем' : ''}</span>
         <h2>${escape(meta.title)}</h2><p class="muted">${escape(meta.subtitle)}</p><div class="tile-bottom"><span>${Math.max(0, visible)} вопросов${meta.encrypted ? ' · 100 из игры + 3 от агента' : ''}</span><span class="tile-arrow" aria-hidden="true">↗</span></div></a><a class="deck-list-link" href="${deckListLink(meta.id)}">Все вопросы</a></article>`;
     }).join('')}</div><p class="hint" style="margin-top:24px">Избранное, скрытые карточки и ответы общие для всех колод. Сохраняются в этом браузере.</p>`;
 }
 
 function unlock(meta, title = meta.title) {
   document.title = `${title} — Вопросы для пары`;
-  app.innerHTML = `${pageTop(title)}<section class="lock-box"><p class="eyebrow">Зашифрованная колода</p><h2>Открыть «${escape(meta.title)}»</h2><p class="muted">Введите пароль от купленных колод. Он сохранится в этом браузере.</p>
+  app.innerHTML = `${pageTop(title)}<section class="lock-box">${meta.source.image ? `<img class="tile-photo" src="decks/${escape(meta.source.image)}" alt="Фото игры «${escape(meta.title)}»" loading="lazy">` : ''}<p class="eyebrow">Зашифрованная колода</p><h2>Открыть «${escape(meta.title)}»</h2><p class="muted">Введите пароль от купленных колод. Он сохранится в этом браузере.</p>
     <form id="unlock-form"><label>Пароль<input id="deck-password" name="password" type="password" autocomplete="current-password" required></label><button class="primary" type="submit">Открыть колоду</button><p class="status error" id="unlock-error" role="alert"></p></form></section>`;
   document.getElementById('unlock-form').onsubmit = async event => {
     event.preventDefault();
@@ -172,6 +172,7 @@ function paintGame() {
   persistPosition();
   const favoriteGame = gameId === 'favorites';
   const deck = decks.get(gameId);
+  const meta = registry.find(m => m.id === gameId);
   const card = game.current();
   const allowedQuestions = game.cards.filter(c => !c.task && game.allowed(c.key));
   const allowed = new Set(allowedQuestions.map(c => c.key));
@@ -194,7 +195,7 @@ function paintGame() {
       <section><h2>Темы</h2><p class="hint">Нажмите на тему, чтобы убрать её из колоды или вернуть. Оставьте хотя бы одну.</p><div class="chips">${themes.map(c => `<button class="chip" data-action="theme" data-theme="${escape(c.themeKey)}" style="--c:${escape(c.theme.color)}" aria-pressed="${!game.state.off.includes(c.themeKey)}">${suit(c.theme.suit)}<span>${favoriteGame ? `${escape(c.deckTitle)} · ` : ''}${escape(c.theme.name)}</span><span class="n">${game.cards.filter(q => !q.task && q.themeKey === c.themeKey && !isHidden(q.key) && (!favoriteGame || isFavorite(q.key))).length}</span></button>`).join('')}</div></section>
       ${hasTasks ? `<section><h2>Задания${deck ? ` «${escape(deck.tasks.name)}»` : ''}</h2><p class="hint">Сгенерированы агентом</p><div class="seg"><button data-action="mix" data-mix="on" aria-pressed="${game.state.mix}">В колоде</button><button data-action="mix" data-mix="off" aria-pressed="${!game.state.mix}">Только по кнопке «Задание»</button></div></section>` : ''}
       <section><h2>Как играть</h2><ul class="rules"><li>Тяните карточки по очереди. Отвечайте сами, задавайте вопрос партнёру или отвечайте оба.</li><li>На любой вопрос можно сказать «пас» без объяснений.</li><li>Слушайте до конца. Не оценивайте и не советуйте, пока не попросят.</li><li>Если стало тяжело, возьмите задание и передохните.</li></ul>${deck?.rules ? `<details><summary>Правила с карточки</summary><div class="deck-rules">${escape(deck.rules.replace(/\*\*/g, '').replace(/^> /gm, ''))}</div></details>` : ''}
-      ${!favoriteGame ? `<p class="hint">${escape(registry.find(m => m.id === gameId).source.label)}${registry.find(m => m.id === gameId).source.url ? ` · <a href="${escape(registry.find(m => m.id === gameId).source.url)}" target="_blank" rel="noopener noreferrer">Источник</a>` : ''}</p>` : ''}</section>
+      ${!favoriteGame ? `<p class="hint">${meta.source.image ? `<img class="source-photo" src="decks/${escape(meta.source.image)}" alt="Фото игры «${escape(meta.title)}»" loading="lazy">` : ''}${escape(meta.source.label)}${meta.source.publisher ? ` · ${escape(meta.source.publisher)}` : ''}${meta.source.url ? ` · <a href="${escape(meta.source.url)}" target="_blank" rel="noopener noreferrer">Источник</a>` : ''}</p>` : ''}</section>
       <button class="quiet" data-action="reset">Перемешать заново</button>
     </aside></div>`;
   bindSwipe();

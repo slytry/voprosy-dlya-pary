@@ -122,7 +122,7 @@ test('encrypted list route opens through the existing password form and jumps on
   const calls = [];
   const context = {
     URL, location: { hash: '#/deck/a/list?n=07' }, renderId: 0, game: null, wakeLock: null,
-    config: {}, registry: [{ id: 'a', title: 'Тестовая колода', encrypted: true }],
+    config: {}, registry: [{ id: 'a', title: 'Тестовая колода', encrypted: true, source: { kind: 'purchased' } }],
     app: { innerHTML: '', setAttribute() {}, contains: () => false, focus() {} },
     document: { getElementById: id => elements.get(id) },
     window: { scrollY: 100, scrollTo: (x, y) => calls.push(['scroll', y]) },

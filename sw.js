@@ -6,6 +6,7 @@ self.addEventListener('install', event => {
     await cache.addAll(CORE);
     const registry = await (await cache.match('./decks/index.json')).json();
     await cache.addAll(registry.map(deck => `./decks/${deck.file}`));
+    await cache.addAll(registry.filter(deck => deck.source.image).map(deck => `./decks/${deck.source.image}`));
     await self.skipWaiting();
   })());
 });
@@ -21,7 +22,7 @@ self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET' || url.origin !== base.origin || !url.pathname.startsWith(base.pathname)) return;
   const path = url.pathname.slice(base.pathname.length);
   // Cache only public app assets. Never intercept private files or GitHub requests.
-  if (!(path === '' || path === 'index.html' || /^(css|js|decks)\/[a-z0-9.-]+\.(css|js|json)$/.test(path))) return;
+  if (!(path === '' || path === 'index.html' || /^(css|js|decks)\/[a-z0-9.-]+\.(css|js|json)$/.test(path) || /^decks\/[a-z0-9.-]+\.jpg$/.test(path))) return;
   event.respondWith((async () => {
     const cache = await caches.open(CACHE);
     try {

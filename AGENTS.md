@@ -3,6 +3,6 @@
 - Работать в этой директории. Ванильный JS и ES-модули: без сборки, фреймворков и внешних JS-библиотек. Пути относительные для GitHub Pages в подпапке.
 - Не коммитить и не пушить без прямого указания пользователя.
 - Никогда не коммитить `private/` и открытый текст купленных колод. Не менять `private/sources/`.
-- Новая купленная колода: JSON в `private/decks/<id>.json` → `node scripts/encrypt-deck.mjs <id>` → запись в `decks/index.json` с `encrypted:true` → тест данных → `node --test`. Обновить `CACHE` в `sw.js` для офлайн-кэша.
+- Новая купленная колода: JSON в `private/decks/<id>.json` → `node scripts/encrypt-deck.mjs <id>` → запись в `decks/index.json` с `encrypted:true`, `source.url` магазина, `source.publisher` и `source.image:'<id>.jpg'` (реальное фото `decks/<id>.jpg`: коробка/рубашки без читаемого текста вопросов) → тест данных → `node --test`. Обновить `CACHE` в `sw.js` для офлайн-кэша.
 - ID вопросов и заданий явные и стабильные. Глобальный ключ — `${deckId}/${id}`. Избранное, скрытые, ответы и имена общие для всех колод; позиции только локальные.
 - Пароль — `DECK_PASSWORD` или `private/password.txt`. Публичным может быть только ciphertext `decks/<id>.enc.json`. Проверять отсутствие уникальных фраз купленной колоды вне `private/`.

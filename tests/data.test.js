@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile, readdir } from 'node:fs/promises';
+import { access, readFile, readdir } from 'node:fs/promises';
 import { decryptJSON } from '../js/crypto.js';
 import { sourceDeck, printedCards } from './source.js';
 
@@ -29,6 +29,17 @@ test('registry and generated deck: stable IDs, 72 questions, 7 themes, 20 tasks'
     assert.ok(['purchased', 'generated'].includes(meta.source.kind));
     assert.equal(meta.encrypted, meta.source.kind === 'purchased');
     assert.match(meta.file, /^[a-z0-9.-]+\.json$/);
+    if (meta.source.image !== undefined) {
+      assert.match(meta.source.image, /^[a-z0-9.-]+\.jpg$/);
+      await access(new URL(`decks/${meta.source.image}`, root));
+    }
+    if (meta.source.kind === 'purchased') {
+      for (const field of ['url', 'publisher']) {
+        assert.equal(typeof meta.source[field], 'string');
+        assert.ok(meta.source[field].trim());
+      }
+      assert.ok(meta.source.image);
+    }
   }
   const deck = await readJSON('decks/razgovory-vdvoyom.json');
   validate(deck);
