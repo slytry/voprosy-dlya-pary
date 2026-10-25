@@ -1,3 +1,16 @@
+export function groupQuestions(questions, themes) {
+  const numbers = [...new Set(questions.filter(q => q.card).map(q => Number(q.card)))].sort((a, b) => a - b);
+  if (!numbers.length) return {
+    groups: themes.map(theme => ({ theme, questions: questions.filter(q => q.theme === theme.id) })).filter(group => group.questions.length),
+    added: [], range: null
+  };
+  return {
+    groups: numbers.map(number => ({ number, questions: questions.filter(q => Number(q.card) === number).sort((a, b) => a.id.localeCompare(b.id)) })),
+    added: questions.filter(q => !q.card),
+    range: { min: numbers[0], max: numbers.at(-1) }
+  };
+}
+
 export function shuffle(values) {
   const array = [...values];
   for (let i = array.length - 1; i > 0; i--) {

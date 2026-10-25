@@ -8,7 +8,7 @@ const root = new URL('../', import.meta.url);
 const readJSON = async name => JSON.parse(await readFile(new URL(name, root), 'utf8'));
 const registry = await readJSON('decks/index.json');
 let privateAvailable = true, password;
-try { password = process.env.DECK_PASSWORD || (await readFile(new URL('private/password.txt', root), 'utf8')).trim(); }
+try { password = process.env.DECK_PASSWORD || (await readFile(new URL('private/password.txt', root), 'utf8')).split('\n')[0].trim(); }
 catch { privateAvailable = false; }
 
 function validate(deck) {

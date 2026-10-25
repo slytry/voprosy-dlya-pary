@@ -54,12 +54,15 @@ main { min-height: 65vh; padding-top: 28px; }
 .deck-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 310px), 1fr)); gap: 24px; }
 .deck-tile { position: relative; display: flex; flex-direction: column; min-height: 290px; padding: 28px; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; text-decoration: none; overflow: hidden; }
 .deck-tile::before { content: ''; position: absolute; width: 180px; height: 180px; border: 1px solid var(--line); border-radius: 30px; transform: rotate(28deg); right: -85px; top: 56px; }
+.deck-game { position: relative; display: flex; flex: 1; flex-direction: column; text-decoration: none; }
+.deck-list-link { position: relative; align-self: flex-start; margin-top: 16px; font-size: 12px; }
 .deck-tile h2 { position: relative; font-size: 30px; max-width: 12ch; margin: 20px 0 10px; }
 .deck-tile .tile-bottom { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: auto; padding-top: 24px; font-size: 12px; color: var(--muted); }
 .tile-arrow { font-size: 22px; color: var(--accent); }
 .badge { display: inline-flex; gap: 6px; align-items: center; font-size: 10px; text-transform: uppercase; letter-spacing: .08em; font-weight: 700; color: var(--accent); }
 .page-top { margin-bottom: 24px; }
 .back { display: inline-block; color: var(--muted); font-size: 12px; text-decoration: none; margin-bottom: 20px; padding: 5px 0; }
+.back + .back { margin-left: 16px; }
 .page-top .hand { max-width: 40ch; }
 .play-layout { display: grid; gap: 32px; align-items: start; }
 .play { display: flex; flex-direction: column; align-items: center; min-width: 0; gap: 16px; }
@@ -109,11 +112,18 @@ summary { cursor: pointer; font-weight: 600; padding: 10px 0; }
 .deck-rules { white-space: pre-wrap; overflow-wrap: anywhere; color: var(--muted); }
 .page-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
 .collection { display: grid; gap: 30px; }
-.collection-group { min-width: 0; }
+.collection-group { min-width: 0; scroll-margin-top: 20px; }
+.card-jump { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; margin-bottom: 24px; }
+.card-jump label { flex: 1 1 200px; }
+.card-jump .status { flex-basis: 100%; margin: 0; }
+.jump-highlight { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 14px; }
 .theme-heading { display: flex; align-items: center; gap: 8px; color: var(--c, var(--fg)); font: 700 13px/1.4 var(--f-ui); margin: 24px 0 12px; }
 .list-item { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; margin-bottom: 10px; overflow-wrap: anywhere; }
 .list-item .list-question { font: 500 17px/1.5 var(--f-title); }
 .item-meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-top: 12px; color: var(--muted); font-size: 11px; }
+.list-item.is-hidden .list-question { color: var(--muted); }
+.item-meta .theme-heading { margin: 0; font: inherit; color: var(--muted); }
+.item-meta .theme-heading svg { color: var(--c); }
 .item-meta button, .item-meta .button { font-size: 11px; padding: 8px 10px; min-height: 36px; }
 .item-actions { display: flex; flex-wrap: wrap; gap: 6px; }
 dl { margin: 14px 0; font-size: 13px; }

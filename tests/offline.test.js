@@ -24,7 +24,7 @@ test('service worker caches the complete portal under a subpath and serves it of
       addEventListener: (name, callback) => events.set(name, callback),
       skipWaiting: async () => {}, clients: { claim: async () => { claimed = true; } }
     },
-    caches: { open: async () => cache, keys: async () => ['vdp-static-v0', 'vdp-static-v1', 'other-app'], delete: async key => deleted.push(key) },
+    caches: { open: async () => cache, keys: async () => ['vdp-static-v0', 'vdp-static-v1', 'vdp-static-v2', 'other-app'], delete: async key => deleted.push(key) },
     fetch: fetcher, URL, Response
   };
   vm.runInNewContext(await readFile(new URL('../sw.js', import.meta.url), 'utf8'), context);
@@ -37,7 +37,7 @@ test('service worker caches the complete portal under a subpath and serves it of
   events.get('activate')({ waitUntil: promise => { work = promise; } });
   await work;
   assert.equal(claimed, true);
-  assert.deepEqual(deleted, ['vdp-static-v0']);
+  assert.deepEqual(deleted, ['vdp-static-v0', 'vdp-static-v1']);
   offline = true;
   for (const path of ['', 'css/app.css', 'js/app.js', 'decks/index.json', 'decks/rasskazhi.enc.json']) {
     let response;

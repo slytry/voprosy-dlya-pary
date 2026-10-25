@@ -1,4 +1,4 @@
-const CACHE = 'vdp-static-v1';
+const CACHE = 'vdp-static-v2';
 const CORE = ['./', './index.html', './css/app.css', './js/app.js', './js/crypto.js', './js/merge.js', './js/game.js', './js/storage.js', './js/sync.js', './js/suits.js', './decks/index.json'];
 self.addEventListener('install', event => {
   event.waitUntil((async () => {

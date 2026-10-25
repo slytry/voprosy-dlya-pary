@@ -11,7 +11,7 @@ if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id || '')) {
   try {
     const deck = JSON.parse(await readFile(new URL(`private/decks/${id}.json`, root), 'utf8'));
     if (deck.id !== id) throw new Error('ID колоды не совпадает с именем файла.');
-    const password = process.env.DECK_PASSWORD || (await readFile(new URL('private/password.txt', root), 'utf8')).trim();
+    const password = process.env.DECK_PASSWORD || (await readFile(new URL('private/password.txt', root), 'utf8')).split('\n')[0].trim();
     const encrypted = await encryptJSON(deck, password);
     const target = new URL(`decks/${id}.enc.json`, root);
     await writeFile(target, JSON.stringify(encrypted, null, 2) + '\n');

@@ -2,7 +2,7 @@ import { createKeyCache, decryptJSON } from './crypto.js';
 import { active, activeKeys } from './merge.js';
 import { createProfile, readLocal, writeLocal, SETTINGS_KEY } from './storage.js';
 import { createSync } from './sync.js';
-import { createGame } from './game.js';
+import { createGame, groupQuestions } from './game.js';
 import { suit } from './suits.js';
 
 const app = document.getElementById('app');
@@ -54,6 +54,8 @@ const nameOf = who => profile.state.names[who]?.trim() || (who === 'me' ? 'Я' :
 const favoriteKeys = () => activeKeys(profile.state.favorites).filter(key => !isHidden(key));
 const positionKey = id => `vdp.position.${id}`;
 const deckLink = (id, card) => `#/deck/${encodeURIComponent(id)}${card ? `?card=${encodeURIComponent(card)}` : ''}`;
+const deckListLink = id => `${deckLink(id)}/list`;
+const sourceLabel = card => card.source === 'agent' ? 'добавлено агентом' : card.generated ? (card.task ? 'задание сгенерировано агентом' : 'сгенерировано агентом') : '';
 const date = at => new Date(at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
 
 function updateCounts() {
@@ -104,8 +106,8 @@ function cardsFor(deck) {
 const allCards = () => [...decks.values()].flatMap(cardsFor);
 const cardByKey = key => allCards().find(card => card.key === key);
 
-function pageTop(title, subtitle = '') {
-  return `<div class="page-top"><a class="back" href="#/">← Все колоды</a><h1>${escape(title)}</h1>${subtitle ? `<p class="hand">${escape(subtitle)}</p>` : ''}</div>`;
+function pageTop(title, subtitle = '', actions = '') {
+  return `<div class="page-top"><a class="back" href="#/">← Все колоды</a>${actions}<h1>${escape(title)}</h1>${subtitle ? `<p class="hand">${escape(subtitle)}</p>` : ''}</div>`;
 }
 
 function home() {
@@ -113,8 +115,8 @@ function home() {
   app.innerHTML = `<div class="intro"><p class="eyebrow">Без спешки · по очереди · вдвоём</p><h1>Давай поговорим<br>о нас</h1><p class="hand">Один вопрос может стать началом большого разговора.</p></div>
     <div class="deck-grid">${registry.map(meta => {
       const visible = meta.questionCount - activeKeys(profile.state.hidden).filter(key => key.startsWith(`${meta.id}/`) && !key.split('/')[1].startsWith('task-')).length;
-      return `<a class="deck-tile" href="${deckLink(meta.id)}"><span class="badge">${meta.encrypted ? '<span aria-label="Зашифровано">🔒</span>' : ''}${escape(meta.source.label)}${meta.encrypted ? ' · под паролем' : ''}</span>
-        <h2>${escape(meta.title)}</h2><p class="muted">${escape(meta.subtitle)}</p><div class="tile-bottom"><span>${Math.max(0, visible)} вопросов${meta.encrypted ? ' · 100 из игры + 3 от агента' : ''}</span><span class="tile-arrow" aria-hidden="true">↗</span></div></a>`;
+      return `<article class="deck-tile"><a class="deck-game" href="${deckLink(meta.id)}"><span class="badge">${meta.encrypted ? '<span aria-label="Зашифровано">🔒</span>' : ''}${escape(meta.source.label)}${meta.encrypted ? ' · под паролем' : ''}</span>
+        <h2>${escape(meta.title)}</h2><p class="muted">${escape(meta.subtitle)}</p><div class="tile-bottom"><span>${Math.max(0, visible)} вопросов${meta.encrypted ? ' · 100 из игры + 3 от агента' : ''}</span><span class="tile-arrow" aria-hidden="true">↗</span></div></a><a class="deck-list-link" href="${deckListLink(meta.id)}">Все вопросы</a></article>`;
     }).join('')}</div><p class="hint" style="margin-top:24px">Избранное, скрытые карточки и ответы общие для всех колод. Сохраняются в этом браузере.</p>`;
 }
 
@@ -158,7 +160,7 @@ function startGame(id, cards, target) {
 
 function cardMarkup(card) {
   if (!card) return `<article class="card end" data-ended="true"><div class="card-body"><p class="card-label">Колода закончилась</p><p class="question">Можно вернуться к прошлым карточкам или начать новый круг.</p><button class="primary" data-action="reset">Перемешать заново</button></div></article>`;
-  const added = card.source === 'agent' ? 'добавлено агентом' : card.generated ? (card.task ? 'задание сгенерировано агентом' : 'сгенерировано агентом') : '';
+  const added = sourceLabel(card);
   return `<article class="card enter" data-key="${escape(card.key)}" style="--c:${escape(card.theme.color)}" aria-label="${card.task ? 'Задание' : 'Вопрос'}">
     <div class="mark">${suit(card.theme.suit)}</div><div class="card-top"><div class="corner"><span>${escape(card.n)}</span>${suit(card.theme.suit)}</div>
     <div class="card-tools"><button data-action="favorite" data-key="${escape(card.key)}" aria-label="${isFavorite(card.key) ? 'Убрать из избранного' : 'В избранное'}" aria-pressed="${isFavorite(card.key)}">${isFavorite(card.key) ? '★' : '☆'}</button><button class="hide-card" data-action="hide" data-key="${escape(card.key)}">Скрыть</button></div></div>
@@ -181,7 +183,7 @@ function paintGame() {
   const nextCard = game.cards.find(c => c.key === nextKey);
   const title = favoriteGame ? 'Наше избранное' : deck.title;
   document.title = `${title} — Вопросы для пары`;
-  app.innerHTML = `${pageTop(title, deck?.tagline || (favoriteGame ? 'Самые важные вопросы из всех колод' : 'Поговорим о том, что важно'))}
+  app.innerHTML = `${pageTop(title, deck?.tagline || (favoriteGame ? 'Самые важные вопросы из всех колод' : 'Поговорим о том, что важно'), favoriteGame ? '' : `<a class="back" href="${deckListLink(gameId)}">Все вопросы</a>`)}
     <div class="play-layout"><section class="play" aria-label="Игра">
       <div class="count" aria-live="polite"><span>Вопросы <b>${shown} / ${allowedQuestions.length}</b></span><span>Задания <b>${shownTasks}</b></span></div>
       <div class="table" id="table"><div class="peek"></div><div class="peek next" ${nextCard ? `style="--c:${escape(nextCard.theme.color)}"` : 'hidden'}></div>${cardMarkup(card)}</div>
@@ -228,16 +230,58 @@ function lockedGroup(meta, count) {
   return `<div class="list-item"><p class="muted">${count} карточек в зашифрованной колоде. Откройте её с паролем, чтобы увидеть текст.</p><a class="button" href="${deckLink(meta.id)}">Открыть «${escape(meta.title)}»</a></div>`;
 }
 
-function listItem(card, mode) {
+function listItem(card, mode, number = '') {
   const key = escape(card.key);
   const answer = profile.state.answers[card.key];
   const hidden = isHidden(card.key);
-  return `<article class="list-item"><p class="list-question">${escape(mode === 'answers' ? answer.q || card.text : card.text)}</p>
+  const added = sourceLabel(card);
+  const deckList = mode === 'deck';
+  return `<article class="list-item${deckList && hidden ? ' is-hidden' : ''}"><p class="list-question">${number ? `<span class="muted">${escape(number)}.</span> ` : ''}${escape(mode === 'answers' ? answer.q || card.text : card.text)}</p>
     ${mode === 'answers' ? `<dl>${['me', 'partner'].filter(who => answer[who]).map(who => `<dt>${escape(nameOf(who))}</dt><dd>${escape(answer[who])}</dd>`).join('')}</dl>` : ''}
-    <div class="item-meta"><span>${escape(card.theme.name)}${card.card ? ` · карточка ${escape(card.card)}` : ''}${card.source === 'agent' ? ' · добавлено агентом' : card.task ? ' · задание сгенерировано агентом' : ''}${mode === 'answers' ? ` · ${date(answer.at)}` : ''}</span><div class="item-actions">
-    ${mode === 'hidden' ? `<button data-action="restore" data-key="${key}">Вернуть</button>` : hidden ? `<button data-action="restore-open" data-key="${key}">Вернуть и открыть</button>` : `<a class="button" href="${deckLink(card.deckId, card.id)}">Открыть карточку</a>`}
-    ${mode === 'favorites' ? `<button data-action="favorite" data-key="${key}">Убрать из избранного</button><button data-action="hide" data-key="${key}">Скрыть</button>` : ''}
+    <div class="item-meta"><span${deckList ? ` class="theme-heading" style="--c:${escape(card.theme.color)}"` : ''}>${deckList ? suit(card.theme.suit) : ''}${escape(card.theme.name)}${card.card ? ` · карточка ${escape(card.card)}` : ''}${added ? ` · ${escape(added)}` : ''}${deckList && hidden ? ' · скрыто' : ''}${mode === 'answers' ? ` · ${date(answer.at)}` : ''}</span><div class="item-actions">
+    ${mode === 'hidden' ? `<button data-action="restore" data-key="${key}">Вернуть</button>` : hidden ? `<button data-action="restore-open" data-key="${key}">${deckList ? 'Открыть карточку' : 'Вернуть и открыть'}</button>${deckList ? `<button data-action="restore" data-key="${key}">Вернуть</button>` : ''}` : `<a class="button" href="${deckLink(card.deckId, card.id)}">Открыть карточку</a>`}
+    ${mode === 'favorites' || deckList ? `<button data-action="favorite" data-key="${key}" aria-label="${isFavorite(card.key) ? 'Убрать из избранного' : 'В избранное'}" aria-pressed="${isFavorite(card.key)}">${deckList ? (isFavorite(card.key) ? '★' : '☆') : 'Убрать из избранного'}</button>${hidden ? '' : `<button data-action="hide" data-key="${key}">Скрыть</button>`}` : ''}
     ${mode === 'answers' ? `<button data-action="delete-answer" data-key="${key}">Удалить ответ</button>` : ''}</div></div></article>`;
+}
+
+function deckList(deck, preserve) {
+  const { groups, added, range } = groupQuestions(deck.questions, deck.themes);
+  const cards = cardsFor(deck);
+  const byId = new Map(cards.map(card => [card.id, card]));
+  const tasksOpen = preserve && document.getElementById('deck-tasks')?.open;
+  const jumpValue = preserve ? document.getElementById('card-number')?.value || '' : '';
+  const questions = (items, numbered = false) => items.map((q, i) => listItem(byId.get(q.id), 'deck', numbered ? q.id.slice(-1) : i + 1)).join('');
+  const rangeHint = range ? `Карточки ${range.min}–${range.max}` : '';
+  document.title = `Все вопросы · ${deck.title} — Вопросы для пары`;
+  app.innerHTML = `${pageTop('Все вопросы', deck.title, `<a class="back" href="${deckLink(deck.id)}">Играть</a>`)}
+    ${range ? `<form class="card-jump" id="card-jump" novalidate><label for="card-number">Перейти к карточке №<input id="card-number" type="number" inputmode="numeric" min="${range.min}" max="${range.max}" step="1" value="${escape(jumpValue)}" aria-describedby="jump-status"></label><button type="submit">Перейти</button><p class="status" id="jump-status" role="status">${rangeHint}</p></form>` : ''}
+    <div class="collection">${groups.map(group => `<section class="collection-group" id="${range ? `card-${group.number}` : `theme-${escape(group.theme.id)}`}">
+      ${range ? `<h2>Карточка ${String(group.number).padStart(2, '0')}</h2>` : `<h2 class="theme-heading" style="--c:${escape(group.theme.color)}">${suit(group.theme.suit)}${escape(group.theme.name)}</h2>`}${questions(group.questions, !!range)}</section>`).join('')}
+      ${added.length ? `<section class="collection-group"><h2>Добавлено агентом</h2>${questions(added)}</section>` : ''}
+      ${cards.some(card => card.task) ? `<details class="collection-group" id="deck-tasks" ${tasksOpen ? 'open' : ''}><summary>Задания «${escape(deck.tasks.name)}»</summary>${cards.filter(card => card.task).map((card, i) => listItem(card, 'deck', i + 1)).join('')}</details>` : ''}
+    </div>`;
+  let highlighted, highlightTimer;
+  const jump = value => {
+    if (!range) return;
+    const number = Number(value);
+    const target = Number.isInteger(number) && groups.some(group => group.number === number) ? document.getElementById(`card-${number}`) : null;
+    const input = document.getElementById('card-number');
+    const status = document.getElementById('jump-status');
+    input.setAttribute('aria-invalid', String(!target));
+    status.classList.toggle('error', !target);
+    status.textContent = target ? rangeHint : `${rangeHint}. Введите номер существующей карточки.`;
+    if (!target) return;
+    input.value = String(number).padStart(2, '0');
+    highlighted?.classList.remove('jump-highlight');
+    clearTimeout(highlightTimer);
+    highlighted = target;
+    target.scrollIntoView({ block: 'start' });
+    target.classList.add('jump-highlight');
+    highlightTimer = setTimeout(() => target.classList.remove('jump-highlight'), 1800);
+  };
+  const form = document.getElementById('card-jump');
+  if (form) form.onsubmit = event => { event.preventDefault(); jump(document.getElementById('card-number').value); };
+  return jump;
 }
 
 function collection(mode) {
@@ -402,6 +446,7 @@ async function render(preserve = false) {
   app.setAttribute('aria-busy', 'true');
   updateCounts();
   try {
+    let afterRender;
     const url = new URL((location.hash || '#/').slice(1), 'https://local.invalid');
     const path = url.pathname.split('/').filter(Boolean).map(decodeURIComponent);
     if (!path.length) { game = null; home(); }
@@ -414,6 +459,7 @@ async function render(preserve = false) {
       if (id !== renderId) return;
       game = null;
       if (!deck) unlock(meta);
+      else if (path[2] === 'list') afterRender = deckList(deck, preserve);
       else {
         startGame(meta.id, cardsFor(deck), url.searchParams.get('card'));
         if (url.searchParams.has('card')) {
@@ -437,10 +483,11 @@ async function render(preserve = false) {
     if (preserve) {
       if (focus?.id) {
         const element = document.getElementById(focus.id);
-        if (element) { element.focus({ preventScroll: true }); if (typeof element.setSelectionRange === 'function') element.setSelectionRange(focus.start, focus.end); }
+        if (element) { element.focus({ preventScroll: true }); try { element.setSelectionRange?.(focus.start, focus.end); } catch { /* number inputs reject selection */ } }
       }
       window.scrollTo(0, scroll);
     } else { window.scrollTo(0, 0); app.focus({ preventScroll: true }); }
+    if (!preserve && url.searchParams.has('n')) afterRender?.(url.searchParams.get('n'));
   } catch (error) {
     game = null;
     app.innerHTML = `${pageTop('Не получилось открыть страницу')}<p class="error">${escape(error.message)}</p><button data-action="retry" id="retry">Попробовать снова</button>`;
